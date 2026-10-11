@@ -1,3 +1,12 @@
 package com.vr.autorizador.dto;
 
-public record CartaoRequestDTO(String numeroCartao) {}
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+public record CartaoRequestDTO(
+        @NotBlank(message = "O número do cartão não pode estar em branco")
+        @Size(min = 16, max = 16, message = "O número do cartão deve conter exatamente 16 dígitos")
+        @Pattern(regexp = "\\d+", message = "O número do cartão deve conter apenas números")
+        String numeroCartao
+) {}

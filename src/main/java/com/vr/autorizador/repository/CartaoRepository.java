@@ -15,8 +15,7 @@ public interface CartaoRepository extends JpaRepository<Cartao, Long> {
     Optional<Cartao> findByNumeroCartao(String numeroCartao);
 
     // Garante controle de concorrência com SELECT ... FOR UPDATE
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT c FROM Cartao c WHERE c.numeroCartao = :numeroCartao")
+    @Query(value = "SELECT * FROM cartoes WHERE numero_cartao = :numeroCartao FOR UPDATE", nativeQuery = true)
     Optional<Cartao> findByNumeroCartaoForUpdate(@Param("numeroCartao") String numeroCartao);
 }
 

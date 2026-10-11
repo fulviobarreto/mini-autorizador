@@ -2,6 +2,7 @@ package com.vr.autorizador.controller;
 
 import com.vr.autorizador.dto.TransacaoDTO;
 import com.vr.autorizador.service.TransacaoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class TransacaoController {
     private final TransacaoService transacaoService;
 
     @PostMapping
-    public ResponseEntity<String> realizarTransacao(@RequestBody TransacaoDTO dto) {
+    public ResponseEntity<String> realizarTransacao(@Valid @RequestBody TransacaoDTO dto) {
         transacaoService.realizarTransacao(dto.numeroCartao(), dto.senhaCartao(), dto.valor());
         return ResponseEntity.status(HttpStatus.CREATED).body("OK");
     }
