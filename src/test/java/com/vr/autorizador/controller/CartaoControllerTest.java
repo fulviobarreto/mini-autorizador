@@ -42,11 +42,11 @@ class CartaoControllerTest {
     @DisplayName("POST /cartoes - Criar cartão com sucesso")
     @WithMockUser
     void criarCartao() throws Exception {
-        CartaoRequestDTO request = new CartaoRequestDTO("6549873025634501");
+        CartaoRequestDTO request = new CartaoRequestDTO("6549873025634501","4501");
 
         CartaoResponseDTO response = new CartaoResponseDTO("4501", "6549873025634501");
 
-        when(cartaoService.criar(request.numeroCartao())).thenReturn(response);
+        when(cartaoService.criar(request.numeroCartao(), request.senha())).thenReturn(response);
 
         mockMvc.perform(post("/cartoes")
                         .with(httpBasic("username", "password"))
@@ -61,11 +61,11 @@ class CartaoControllerTest {
     @DisplayName("POST /cartoes - Retornar 422 e dados do cartão existente quando o cartão já estiver cadastrado")
     @WithMockUser
     void consultaCartaoExistente() throws Exception {
-        CartaoRequestDTO request = new CartaoRequestDTO("6549873025634501");
+        CartaoRequestDTO request = new CartaoRequestDTO("6549873025634501", "4501");
 
         CartaoResponseDTO response = new CartaoResponseDTO("4501", "6549873025634501");
 
-        when(cartaoService.criar(any(String.class)))
+        when(cartaoService.criar(any(String.class), any(String.class)))
                 .thenThrow(new CartaoExisteException(response));
 
         mockMvc.perform(post("/cartoes")

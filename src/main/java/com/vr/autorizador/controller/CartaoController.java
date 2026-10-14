@@ -21,7 +21,7 @@ public class CartaoController {
 
     @PostMapping
     public ResponseEntity<CartaoResponseDTO> criar(@Valid @RequestBody CartaoRequestDTO request) {
-        CartaoResponseDTO cartaoCriado = cartaoService.criar(request.numeroCartao());
+        CartaoResponseDTO cartaoCriado = cartaoService.criar(request.numeroCartao(), request.senha());
         return ResponseEntity.status(HttpStatus.CREATED).body(cartaoCriado);
     }
 

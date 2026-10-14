@@ -31,12 +31,12 @@ class CartaoServiceTest {
     @Test
     @DisplayName("Criar cartão com sucesso e gerar senha com os 4 últimos dígitos do número")
     void criarCartaoComSucesso() {
-        CartaoRequestDTO request = new CartaoRequestDTO("6549873025634501");
+        CartaoRequestDTO request = new CartaoRequestDTO("6549873025634501", "4501");
 
         when(cartaoRepository.findByNumeroCartao(request.numeroCartao()))
                 .thenReturn(Optional.empty());
 
-        CartaoResponseDTO response = cartaoService.criar(request.numeroCartao());
+        CartaoResponseDTO response = cartaoService.criar(request.numeroCartao(), request.senha());
 
         assertNotNull(response);
         assertEquals("6549873025634501", response.numeroCartao());
@@ -47,7 +47,7 @@ class CartaoServiceTest {
     @Test
     @DisplayName("Lançar CartaoExisteException quando o cartão já estiver cadastrado")
     void lancarExcecaoQuandoCartaoExistir() {
-        CartaoRequestDTO request = new CartaoRequestDTO("6549873025634501");
+        CartaoRequestDTO request = new CartaoRequestDTO("6549873025634501", "4501");
 
         Cartao cartaoExistente = Cartao.builder()
                 .id(1L)
@@ -61,7 +61,7 @@ class CartaoServiceTest {
 
         CartaoExisteException exception = assertThrows(
                 CartaoExisteException.class,
-                () -> cartaoService.criar(request.numeroCartao())
+                () -> cartaoService.criar(request.numeroCartao(), request.senha())
         );
 
         assertNotNull(exception.getCartaoResponse());

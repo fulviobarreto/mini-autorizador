@@ -9,18 +9,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class CartaoService {
 
-    private static final String SENHA_PADRAO = "1234";
     private static final BigDecimal SALDO_INICIAL = new BigDecimal("500.00");
     private final CartaoRepository cartaoRepository;
 
     @Transactional
-    public CartaoResponseDTO criar(String numeroCartao) {
+    public CartaoResponseDTO criar(String numeroCartao, String senha) {
         cartaoRepository.findByNumeroCartao(numeroCartao)
                 // Se o cartão já existe, lança a exceção contendo a senha e o numeroCartao cadastrados
                 .ifPresent(cartao -> {
@@ -29,7 +27,7 @@ public class CartaoService {
 
         Cartao novoCartao = Cartao.builder()
                 .numeroCartao(numeroCartao)
-                .senha(senhaGerada(numeroCartao))
+                .senha(senha)
                 .saldo(SALDO_INICIAL)
                 .build();
         cartaoRepository.save(novoCartao);
@@ -42,15 +40,5 @@ public class CartaoService {
         return cartaoRepository.findByNumeroCartao(numeroCartao)
                 .map(Cartao::getSaldo)
                 .orElse(null);
-    }
-
-    /**
-     * Define a senha padrão exigida no contrato
-     */
-    private String senhaGerada(String numeroCartao) {
-        return Optional.ofNullable(numeroCartao)
-                .filter(num -> num.length() >= 4)
-                .map(num -> num.substring(num.length() - 4))
-                .orElse(SENHA_PADRAO); // Valor fallback caso a entrada seja nula ou menor que 4 caracteres
     }
 }
