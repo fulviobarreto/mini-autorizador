@@ -13,11 +13,10 @@ O **Mini Autorizador** é uma aplicação backend estruturada para processar o c
 - [Endpoints da API](#endpoints-da-api)
 - [Como executar](#como-executar)
 - [Testes](#testes)
-- [Autor](#autor)
 
 ## Funcionalidades
 
-- **Cadastro de Cartões**: Criação de novos cartões com saldo inicial padrão e geração dinâmica de senha.
+- **Cadastro de Cartões**: Criação de novos cartões com saldo inicial padrão.
 - **Consulta de Saldo**: Recuperação do saldo atual associado a um número de cartão válido.
 - **Processamento de Transações**: Validação de regras de negócio (cartão existente, senha válida e saldo suficiente).
 - **Tratamento de Concorrência**: Bloqueio pessimista de registros no banco de dados para evitar condições de corrida (*race conditions*).
@@ -41,9 +40,8 @@ O **Mini Autorizador** é uma aplicação backend estruturada para processar o c
 O projeto foi construído priorizando as melhores práticas de engenharia de software corporativa:
 
 1. **Zero Condicionais (`if`):** As validações de regras de negócio em serviços e fluxos de domínio foram implementadas utilizando recursos funcionais nativos do Java (`Optional.filter`, `.map` e `.orElseThrow`), mantendo o código linear, declarativo e legível.
-2. **Geração Dinâmica de Senha:** A regra de senha padrão extrai de forma programática e segura os últimos 4 dígitos do número do cartão informado na requisição, sem requerer persistência de campos extras desnecessários no DTO de entrada.
-3. **Concorrência com Query Nativa e Bloqueio Pessimista (`FOR UPDATE`):** Para garantir a consistência estrita do saldo durante transações financeiras paralelas de alta concorrência, o repositório utiliza uma query nativa otimizada com a instrução `FOR UPDATE` do MySQL, assegurando isolamento transacional rigoroso sem conflitos de dialeto ORM.
-4. **Arquitetura em Camadas:** Separação clara entre Controllers (orquestração HTTP), Services (regras de negócio e fluxos funcionais), Repositories (comunicação com ORM) e DTOs/Entities (transporte de dados e mapeamento relacional).
+2. **Concorrência com Query Nativa e Bloqueio Pessimista (`FOR UPDATE`):** Para garantir a consistência estrita do saldo durante transações financeiras paralelas de alta concorrência, o repositório utiliza uma query nativa otimizada com a instrução `FOR UPDATE` do MySQL, assegurando isolamento transacional rigoroso sem conflitos de dialeto ORM.
+3. **Arquitetura em Camadas:** Separação clara entre Controllers (orquestração HTTP), Services (regras de negócio e fluxos funcionais), Repositories (comunicação com ORM) e DTOs/Entities (transporte de dados e mapeamento relacional).
 
 ## Estrutura de pacotes
 ```
@@ -74,7 +72,7 @@ com.vr.miniautorizador
 
 ## Modelo de dados
 
-A tabela principal de **Cartão** armazena o número identificador único, a senha gerada e o saldo atual, servindo de base para o processamento atômico das transações.
+A tabela principal de **Cartão** armazena o número identificador único, a senha e o saldo atual, servindo de base para o processamento atômico das transações.
 
 ## Segurança e Autenticação
 
@@ -95,8 +93,10 @@ A API utiliza **Spring Security** configurado com autenticação **HTTP Basic**,
 ```json
 Body
 {
-  "numeroCartao": "6549873025634501"
+  "numeroCartao": "6549873025634501",
+  "senha": "1234"
 }
+Autenticação: BASIC, com login = username e senha = password
 ```
 #### Realizar Transação (`POST http://localhost:8080/transacoes`)
 **Requisição:**
@@ -107,12 +107,13 @@ Body
   "senhaCartao": "4501",
   "valor": 10.00
 }
+Autenticação: BASIC, com login = username e senha = password
 ```
 
 ### Testes
 O projeto conta com uma suíte de testes automatizados abrangente cobrindo:
 
-**Testes Unitários de Serviço** (`CartaoServiceTest`, `TransacaoServiceTest`): Validação isolada de regras de negócio, geração de senhas e cenários de exceção.
+**Testes Unitários de Serviço** (`CartaoServiceTest`, `TransacaoServiceTest`): Validação isolada de regras de negócio e cenários de exceção.
 
 **Testes de Integração Web** (`CartaoControllerTest`, `TransacaoControllerTest`): Validação de endpoints via MockMvc, checagem de contratos JSON e segurança HTTP Basic.
 
