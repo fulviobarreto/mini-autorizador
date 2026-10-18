@@ -10,11 +10,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -22,6 +25,9 @@ class TransacaoServiceTest {
 
     @Mock
     private CartaoRepository cartaoRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private TransacaoService transacaoService;
@@ -35,13 +41,15 @@ class TransacaoServiceTest {
 
         Cartao cartaoValido = Cartao.builder()
                 .id(1L)
-                .numeroCartao("6549873025634501")
-                .senha("4501")
+                .numeroCartao(numeroCartao)
+                .senha("$2a$10$encodedPasswordHash")
                 .saldo(new BigDecimal("500.00"))
                 .build();
 
         when(cartaoRepository.findByNumeroCartaoForUpdate(numeroCartao))
                 .thenReturn(Optional.of(cartaoValido));
+        when(passwordEncoder.matches(eq(senhaCartao), anyString()))
+                .thenReturn(true);
 
         transacaoService.realizarTransacao(numeroCartao, senhaCartao, valor);
 
@@ -77,13 +85,15 @@ class TransacaoServiceTest {
 
         Cartao cartao = Cartao.builder()
                 .id(1L)
-                .numeroCartao("6549873025634501")
-                .senha("4501")
+                .numeroCartao(numeroCartao)
+                .senha("$2a$10$encodedPasswordHash")
                 .saldo(new BigDecimal("500.00"))
                 .build();
 
         when(cartaoRepository.findByNumeroCartaoForUpdate(numeroCartao))
                 .thenReturn(Optional.of(cartao));
+        when(passwordEncoder.matches(eq(senhaCartao), anyString()))
+                .thenReturn(false);
 
         TransacaoInvalidaException exception = assertThrows(
                 TransacaoInvalidaException.class,
@@ -103,13 +113,15 @@ class TransacaoServiceTest {
 
         Cartao cartao = Cartao.builder()
                 .id(1L)
-                .numeroCartao("6549873025634501")
-                .senha("4501")
+                .numeroCartao(numeroCartao)
+                .senha("$2a$10$encodedPasswordHash")
                 .saldo(new BigDecimal("500.00"))
                 .build();
 
         when(cartaoRepository.findByNumeroCartaoForUpdate(numeroCartao))
                 .thenReturn(Optional.of(cartao));
+        when(passwordEncoder.matches(eq(senhaCartao), anyString()))
+                .thenReturn(true);
 
         TransacaoInvalidaException exception = assertThrows(
                 TransacaoInvalidaException.class,

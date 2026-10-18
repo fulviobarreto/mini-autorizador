@@ -68,4 +68,17 @@ class TransacaoControllerTest {
                 .andExpect(status().isUnprocessableEntity()) // 422
                 .andExpect(content().string(RegraAutorizacaoEnum.SALDO_INSUFICIENTE.name()));
     }
+
+    @Test
+    @DisplayName("POST /transacoes - Retornar 400 Bad Request quando o valor da transação for nulo ou negativo")
+    @WithMockUser
+    void transacaoValorInvalido() throws Exception {
+        TransacaoDTO dto = new TransacaoDTO("6549873025634501", "4501", new BigDecimal("-10.00"));
+
+        mockMvc.perform(post("/transacoes")
+                        .with(httpBasic("username", "password"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
+    }
 }

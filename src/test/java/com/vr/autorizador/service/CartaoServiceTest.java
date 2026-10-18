@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -25,23 +26,29 @@ class CartaoServiceTest {
     @Mock
     private CartaoRepository cartaoRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private CartaoService cartaoService;
 
     @Test
-    @DisplayName("Criar cartão com sucesso e gerar senha com os 4 últimos dígitos do número")
+    @DisplayName("Criar cartão com sucesso aplicando hash na senha e retornando DTO correto")
     void criarCartaoComSucesso() {
         CartaoRequestDTO request = new CartaoRequestDTO("6549873025634501", "4501");
 
         when(cartaoRepository.findByNumeroCartao(request.numeroCartao()))
                 .thenReturn(Optional.empty());
+        when(passwordEncoder.encode(request.senha()))
+                .thenReturn("$2a$10$hashedPasswordMock");
 
         CartaoResponseDTO response = cartaoService.criar(request.numeroCartao(), request.senha());
 
         assertNotNull(response);
         assertEquals("6549873025634501", response.numeroCartao());
-        assertEquals("4501", response.senha()); // Últimos 4 dígitos extraídos dinamicamente
-        verify(cartaoRepository, times(1)).save(any(Cartao.class));
+        assertEquals("4501", response.senha());
+        verify(cartaoRepository, times(1)).saveAndFlush(any(Cartao.class));
+        verify(passwordEncoder, times(1)).encode("4501");
     }
 
     @Test
@@ -52,7 +59,7 @@ class CartaoServiceTest {
         Cartao cartaoExistente = Cartao.builder()
                 .id(1L)
                 .numeroCartao("6549873025634501")
-                .senha("4501")
+                .senha("$2a$10$hashedPasswordMock")
                 .saldo(new BigDecimal("500.00"))
                 .build();
 
@@ -77,7 +84,7 @@ class CartaoServiceTest {
         Cartao cartao = Cartao.builder()
                 .id(1L)
                 .numeroCartao(numeroCartao)
-                .senha("4501")
+                .senha("$2a$10$hashedPasswordMock")
                 .saldo(new BigDecimal("500.00"))
                 .build();
 

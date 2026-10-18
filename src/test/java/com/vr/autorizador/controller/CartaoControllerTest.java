@@ -104,4 +104,18 @@ class CartaoControllerTest {
                         .with(httpBasic("username", "password")))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    @DisplayName("POST /cartoes - Retornar 400 Bad Request quando o número do cartão for inválido")
+    @WithMockUser
+    void criarCartaoInvalido() throws Exception {
+        // Número de cartão inválido (menos de 16 dígitos)
+        CartaoRequestDTO request = new CartaoRequestDTO("123", "4501");
+
+        mockMvc.perform(post("/cartoes")
+                        .with(httpBasic("username", "password"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
 }
