@@ -6,6 +6,7 @@ import com.vr.autorizador.model.Cartao;
 import com.vr.autorizador.repository.CartaoRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ import java.util.Optional;
 public class TransacaoService {
 
     private final CartaoRepository cartaoRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public void realizarTransacao(String numeroCartao, String senhaCartao, BigDecimal valor) {
@@ -24,8 +26,12 @@ public class TransacaoService {
                 .orElseThrow(() -> new TransacaoInvalidaException(RegraAutorizacaoEnum.CARTAO_INEXISTENTE));
 
         // Regra 2: A senha deve ser a correta
+//        Optional.of(cartao)
+//                .filter(c -> c.getSenha().equals(senhaCartao))
+//                .orElseThrow(() -> new TransacaoInvalidaException(RegraAutorizacaoEnum.SENHA_INVALIDA));
+
         Optional.of(cartao)
-                .filter(c -> c.getSenha().equals(senhaCartao))
+                .filter(c -> passwordEncoder.matches(senhaCartao, c.getSenha()))
                 .orElseThrow(() -> new TransacaoInvalidaException(RegraAutorizacaoEnum.SENHA_INVALIDA));
 
         // Regra 3: O cartão deve possuir saldo suficiente
